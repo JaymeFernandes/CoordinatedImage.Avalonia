@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/CoordinatedImage.Avalonia/">
+    <Project Path="CoordinatedImage.Avalonia\CoordinatedImage.Avalonia.csproj" />
+  </Folder>
+</Solution>
