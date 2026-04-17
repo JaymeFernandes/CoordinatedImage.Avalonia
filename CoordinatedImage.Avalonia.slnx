@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/CoordinatedImage.Avalonia/">
-    <Project Path="CoordinatedImage.Avalonia\CoordinatedImage.Avalonia.csproj" />
+    <Project Path="ImagaLoader.Demo/ImagaLoader.Demo.csproj" />
+    <Project Path="ImageLoader/ImageLoader.csproj" />
   </Folder>
 </Solution>

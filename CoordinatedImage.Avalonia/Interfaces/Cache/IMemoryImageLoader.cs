@@ -3,7 +3,6 @@ using CoordinatedImage.Avalonia.Utilities;
 
 namespace CoordinatedImage.Avalonia.Interfaces.Cache;
 
-public interface IMemoryLoader : IImageCacheWrite<IRef<Bitmap>>, IImageCacheReader
+public interface IMemoryLoader : IImageCacheWrite<IRef<Bitmap>>, IImageCacheReader, IDisposable
 {
-    
 }

@@ -9,28 +9,39 @@ namespace CoordinatedImage.Avalonia.Coordinator;
 public class SmartImageCoordinator : ImageCoordinatorBase
 {
     private readonly IMemoryLoader _memoryLoader;
-    
+
     public SmartImageCoordinator(IDiskLoader diskLoader, IMemoryLoader memoryLoader) : base(diskLoader)
     {
         _memoryLoader = memoryLoader;
     }
-    
-    public override async Task<IRef<Bitmap>?> LoadAsync(string? uri, IStorageProvider? storageprovider, bool saveToDisk = false)
+
+    public override async Task<IRef<Bitmap>?> LoadAsync(string? uri,
+        IStorageProvider? storageprovider,
+        CancellationToken ctx,
+        bool saveToDisk = false)
     {
-        if(uri == null)
+        ctx.ThrowIfCancellationRequested();
+
+        if (uri == null)
             return null;
-        
+
+        ctx.ThrowIfCancellationRequested();
+
         var reference = await _memoryLoader.TryGetAsync(uri);
 
         if (reference != null)
             return reference;
-    
 
-        reference = await base.LoadAsync(uri, storageprovider, saveToDisk);
-        
-        if(reference != null)
+        ctx.ThrowIfCancellationRequested();
+
+        reference = await base.LoadAsync(uri, storageprovider, ctx, saveToDisk);
+
+        if (reference != null)
+        {
+            ctx.ThrowIfCancellationRequested();
             await _memoryLoader.StoreAsync(uri, reference);
-        
+        }
+
         return reference;
     }
 }

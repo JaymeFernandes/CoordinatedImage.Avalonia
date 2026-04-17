@@ -9,20 +9,20 @@ public class LocalImageLoader : ILocalImageLoader
 {
     public async Task<IRef<Bitmap>?> TryGetAsync(string? key, IStorageProvider? provider)
     {
-        if(string.IsNullOrWhiteSpace(key))
+        if (string.IsNullOrWhiteSpace(key))
             return null;
-        
+
         if (File.Exists(key))
             return RefCountable.Create(new Bitmap(key), key);
-        
-        if (provider is null) 
+
+        if (provider is null)
             return null;
 
         try
         {
             var fileInfo = await provider.TryGetFileFromPathAsync(key);
-            
-            if(fileInfo is null)
+
+            if (fileInfo is null)
                 return null;
             using var fileStream = await fileInfo.OpenReadAsync();
 
@@ -32,6 +32,5 @@ public class LocalImageLoader : ILocalImageLoader
         {
             return null;
         }
-        
     }
 }

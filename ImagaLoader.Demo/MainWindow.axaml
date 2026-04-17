@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:image="clr-namespace:ImageLoader.Control;assembly=ImageLoader"
+        xmlns:vm="clr-namespace:ImagaLoader.Demo.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:DataType="vm:MainWindowViewModel"
+        x:Class="ImagaLoader.Demo.MainWindow"
+        Title="ImagaLoader.Demo">
+    <ScrollViewer>
+        <Grid RowDefinitions="Auto, Auto">
+            <image:NetImage Width="700" Source="https://4kwallpapers.com/images/walls/thumbs_3t/25922.jpg"/>
+            
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding Paths}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <image:NetImage Width="600" Source="{Binding}" >
+                            <image:NetImage.LoadingTemplate>
+                                <DataTemplate>
+                                    <TextBlock>Loading</TextBlock>
+                                </DataTemplate>
+                            </image:NetImage.LoadingTemplate>
+                        
+                            <image:NetImage.ErrorTemplate>
+                                <DataTemplate>
+                                    <TextBlock>Error</TextBlock>
+                                </DataTemplate>
+                            </image:NetImage.ErrorTemplate>
+                        </image:NetImage>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+        
+    </ScrollViewer>
+</Window>

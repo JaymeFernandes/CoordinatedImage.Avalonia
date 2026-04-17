@@ -8,7 +8,7 @@ namespace CoordinatedImage.Avalonia;
 
 public static class ImageLoaderConfiguration
 {
-    public static IImageCoordinator Coordinator { get; set; } 
+    public static IImageCoordinator Coordinator { get; set; }
         = new SmartImageCoordinator(new DiskLoader(), new MemoryLoader(30));
 
     public static IDownloadServices DownloadServices { get; set; }

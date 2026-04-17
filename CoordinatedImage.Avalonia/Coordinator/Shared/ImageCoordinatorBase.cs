@@ -17,38 +17,49 @@ public class ImageCoordinatorBase : IImageCoordinator
         DiskLoader = diskLoader;
         LocalImageLoader = new LocalImageLoader();
     }
-    
-    public virtual async Task<IRef<Bitmap>?> LoadAsync(string? uri, IStorageProvider? storageprovider, bool saveToDisk = false)
+
+    public virtual async Task<IRef<Bitmap>?> LoadAsync(string? uri, IStorageProvider? storageprovider,
+        CancellationToken ctx, bool saveToDisk = false)
     {
-        var reference = await  LocalImageLoader.TryGetAsync(uri, storageprovider);
-        
-        if(reference != null)
+        ctx.ThrowIfCancellationRequested();
+
+        var reference = await LocalImageLoader.TryGetAsync(uri, storageprovider);
+
+        if (reference != null)
             return reference;
-        
+
+        ctx.ThrowIfCancellationRequested();
+
         reference = await DiskLoader.TryGetAsync(uri);
 
         if (reference != null)
             return reference;
 
-        var path = await ImageLoaderConfiguration.DownloadServices.DownloadAsync(uri);
-        
+        ctx.ThrowIfCancellationRequested();
+
+        var path = await ImageLoaderConfiguration
+            .DownloadServices
+            .DownloadAsync(uri);
+
         if (!string.IsNullOrWhiteSpace(path))
         {
-            if(saveToDisk)
+            if (saveToDisk)
+            {
+                ctx.ThrowIfCancellationRequested();
                 await DiskLoader.StoreAsync(uri, path);
-            
+            }
+
+            ctx.ThrowIfCancellationRequested();
             reference = await DiskLoader.TryGetAsync(uri);
 
-            if (!saveToDisk)
-                await ImageLoaderConfiguration.DownloadServices.EnforceDiskLimitAsync();
-            
             return reference;
         }
-        
+
         return null;
     }
 
-    public Task<ICollection<string>> LoadChunkedAsync(string? uri, IStorageProvider? storageprovider, bool saveToDisk = false)
+    public Task<ICollection<string>> LoadChunkedAsync(string? uri, IStorageProvider? storageprovider,
+        bool saveToDisk = false)
     {
         throw new NotImplementedException();
     }

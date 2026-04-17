@@ -3,76 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using CoordinatedImage.Avalonia.Utilities;
 
-namespace CoordinatedImage.Avalonia.Controls.Image;
+namespace CoordinatedImage.Avalonia.Controls;
 
 public class RetainedSmartImage : SmartImageBase<RetainedSmartImage>
 {
     private CancellationTokenSource? _unloadDelayCts;
-
-    protected override async Task LoadAsync(string? uri)
-    {
-        State = AsyncImageState.Loading;
-
-        CancelImmediateUnload();
-        CancelLoad();
-
-        Coordinator ??= ImageLoaderConfiguration.Coordinator;
-
-        var myVersion = Interlocked.Increment(ref Version);
-        var cts = new CancellationTokenSource();
-        Cts = cts;
-        var token = cts.Token;
-
-        if (string.IsNullOrWhiteSpace(uri))
-        {
-            ScheduleUnload();
-            return;
-        }
-
-        try
-        {
-            var newRef = await Coordinator.LoadAsync(uri, TopLevel.GetTopLevel(this)?.StorageProvider);
-
-            if (newRef == null)
-            {
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    Image.Source = null;
-                    State = AsyncImageState.Error;
-                });
-
-                return;
-            }
-
-            if (token.IsCancellationRequested || myVersion != Version)
-            {
-                newRef.Dispose();
-                return;
-            }
-
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                if (myVersion != Version)
-                {
-                    newRef.Dispose();
-                    return;
-                }
-
-                var oldRef = Ref;
-
-                Ref = newRef;
-                Image.Source = Ref.Item;
-                State = AsyncImageState.Success;
-
-                oldRef?.Dispose();
-            });
-        }
-        catch
-        {
-            if (!token.IsCancellationRequested)
-                ScheduleUnload();
-        }
-    }
 
     private async void ScheduleUnload()
     {
@@ -119,6 +54,71 @@ public class RetainedSmartImage : SmartImageBase<RetainedSmartImage>
 
         old.Cancel();
         old.Dispose();
+    }
+
+    protected override async Task LoadAsync(string? uri)
+    {
+        State = AsyncImageState.Loading;
+
+        CancelImmediateUnload();
+        CancelLoad();
+
+        Coordinator ??= ImageLoaderConfiguration.Coordinator;
+
+        var myVersion = Interlocked.Increment(ref Version);
+        var cts = new CancellationTokenSource();
+        Cts = cts;
+        var token = cts.Token;
+
+        if (string.IsNullOrWhiteSpace(uri))
+        {
+            ScheduleUnload();
+            return;
+        }
+
+        try
+        {
+            var newRef = await Coordinator.LoadAsync(uri, TopLevel.GetTopLevel(this)?.StorageProvider, token);
+
+            if (newRef == null)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    Image.Source = null;
+                    State = AsyncImageState.Error;
+                });
+
+                return;
+            }
+
+            if (token.IsCancellationRequested || myVersion != Version)
+            {
+                newRef.Dispose();
+                return;
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (myVersion != Version)
+                {
+                    newRef.Dispose();
+                    return;
+                }
+
+                var oldRef = Ref;
+
+                Ref = newRef;
+                Image.Source = Ref.Item;
+                State = AsyncImageState.Success;
+
+                oldRef?.Dispose();
+            });
+        }
+        catch
+        {
+            if (!token.IsCancellationRequested)
+                ScheduleUnload();
+        }
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
